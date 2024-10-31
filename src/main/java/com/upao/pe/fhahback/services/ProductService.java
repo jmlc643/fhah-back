@@ -1,8 +1,6 @@
 package com.upao.pe.fhahback.services;
 
 import com.upao.pe.fhahback.models.*;
-import com.upao.pe.fhahback.models.enums.Sizes;
-import com.upao.pe.fhahback.models.enums.Suppliers;
 import com.upao.pe.fhahback.repositories.BrandProductRepository;
 import com.upao.pe.fhahback.repositories.InventoryRepository;
 import com.upao.pe.fhahback.repositories.ProductRepository;
@@ -10,9 +8,7 @@ import com.upao.pe.fhahback.serializers.brand.BrandSerializer;
 import com.upao.pe.fhahback.serializers.brandproduct.BrandProductSerializer;
 import com.upao.pe.fhahback.serializers.color.ColorSerializer;
 import com.upao.pe.fhahback.serializers.inventory.InventorySerializer;
-import com.upao.pe.fhahback.serializers.product.CreateProductFHAHRequest;
-import com.upao.pe.fhahback.serializers.product.CreateProductRHRequest;
-import com.upao.pe.fhahback.serializers.product.ProductSerializer;
+import com.upao.pe.fhahback.serializers.product.*;
 import com.upao.pe.fhahback.serializers.size.SizeSerializer;
 import com.upao.pe.fhahback.serializers.supplier.SupplierSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,5 +173,60 @@ public class ProductService {
             throw new RuntimeException("Producto no encontrado");
         }
         return product.get();
+    }
+
+    // FILTERS
+    public List<DetailsProductSerializer> filterProductsFHAH(FilterProductsRequest request){
+        List<Color> colors = colorService.getColors(request.getColors());
+        List<Size> sizes = sizeService.getSizes(request.getSizes());
+        List<Supplier> suppliers = supplierService.getSuppliers(request.getSuppliers());
+        /*
+        // Filtrar por cada criterio usando las listas convertidas de entidades
+        List<Inventory> filteredByColor = colors.isEmpty()
+                ? inventoryRepository.findAll()
+                : inventoryRepository.findByColorIn(colors);
+
+        List<Inventory> filteredBySize = sizes.isEmpty()
+                ? inventoryRepository.findAll()
+                : inventoryRepository.findBySizeIn(sizes);
+
+        List<Inventory> filteredBySupplier = suppliers.isEmpty()
+                ? inventoryRepository.findAll()
+                : inventoryRepository.findBySupplierIn(suppliers);
+
+        // Combina los resultados para aplicar todos los filtros
+        List<Inventory> results = filteredByColor.stream()
+                .filter(filteredBySize::contains)
+                .filter(filteredBySupplier::contains)
+                .toList();
+
+         */
+
+        // Verificar si algún filtro enviado por el usuario no tiene coincidencias en la base de datos
+        if ((colors != null && colors.isEmpty()) ||
+                (sizes != null && sizes.isEmpty()) ||
+                (suppliers != null && suppliers.isEmpty())) {
+            return List.of(); // Retorna vacío si algún filtro enviado no tiene coincidencias
+        }
+
+        // Aplicar el filtrado acumulativo solo con los filtros que se enviaron
+        List<Inventory> results = inventoryRepository.findAll().stream()
+                .filter(inventory ->
+                        (colors == null || colors.contains(inventory.getColor())) &&
+                                (sizes == null || sizes.contains(inventory.getSize())) &&
+                                (suppliers == null || suppliers.contains(inventory.getSupplier()))
+                )
+                .toList();
+
+        // Mapear los resultados a `ProductSerializer`
+        return results.stream()
+                .map(this::returnDetailsProductSerializerFHAH)
+                .toList();
+    }
+
+    public DetailsProductSerializer returnDetailsProductSerializerFHAH(Inventory inventory){
+        Product product = inventory.getProduct();
+        InventorySerializer inventorySerializer = new InventorySerializer(inventory.getQuantity(), new SupplierSerializer(inventory.getSupplier().getSuppliersName().toString()), new SizeSerializer(inventory.getSize().getSize().toString()), new ColorSerializer(inventory.getColor().getColorName()));
+        return new DetailsProductSerializer(product.getCode(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(), inventorySerializer, null);
     }
 }
