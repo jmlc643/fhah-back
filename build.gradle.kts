@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.upao.pe"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2-SNAPSHOT"
 
 java {
     toolchain {
@@ -32,6 +32,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf:3.3.5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
