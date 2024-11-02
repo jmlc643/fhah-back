@@ -7,6 +7,8 @@ import lombok.Data;
 @Data
 public class CreateProductFHAHRequest {
     private String code;
+    private String barcode;
+    private String photo;
     private double purchasePrice;
     private String name;
     private String model;

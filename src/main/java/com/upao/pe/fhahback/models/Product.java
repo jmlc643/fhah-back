@@ -22,6 +22,9 @@ public class Product {
     @Column(name = "codigo", nullable = false)
     private String code;
 
+    @Column(name = "codigo_barras", nullable = false, unique = true)
+    private String barcode;
+
     @Column(name = "precio_compra", nullable = false)
     private double purchasePrice;
 
@@ -33,6 +36,9 @@ public class Product {
 
     @Column(name = "precio_venta", nullable = false)
     private double salesPrice;
+
+    @Column(name = "foto", nullable = false)
+    private String photo;
 
     // Relación Uno a Muchos con Inventario
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)

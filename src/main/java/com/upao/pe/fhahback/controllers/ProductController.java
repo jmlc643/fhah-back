@@ -33,7 +33,17 @@ public class ProductController {
     }
 
     @PostMapping("/filter/fhah/")
-    public List<DetailsProductSerializer> filterProductsFHAH(@RequestBody FilterProductsRequest request){
+    public List<DetailsProductSerializer> filterProductsFHAH(@RequestBody FilterProductsFHAHRequest request){
         return productService.filterProductsFHAH(request);
+    }
+
+    @PostMapping("/filter/rh/")
+    public List<DetailsProductSerializer> filterProductsRH(@RequestBody FilterProductsRHRrequest request){
+        return productService.filterProductsRH(request);
+    }
+
+    @GetMapping("/search/{product}")
+    public List<DetailsProductSerializer> searchProducts(@PathVariable String product){
+        return productService.searchProducts(product);
     }
 }
