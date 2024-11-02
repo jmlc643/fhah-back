@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,6 +26,12 @@ public class SizeService {
             throw new RuntimeException("Talla no encontrada");
         }
         return size.get();
+    }
+
+    public List<Size> getSizes(List<String> sizes){
+        List<Sizes> sizesEnums = new ArrayList<>();
+        sizes.forEach(size -> sizesEnums.add(Sizes.valueOf(size.toUpperCase())));
+        return sizes.isEmpty() ? null : sizeRepository.findBySizeIn(sizesEnums);
     }
 
     public boolean existsSize(String sizes){

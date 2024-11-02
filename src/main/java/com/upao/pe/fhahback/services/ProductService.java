@@ -1,8 +1,6 @@
 package com.upao.pe.fhahback.services;
 
 import com.upao.pe.fhahback.models.*;
-import com.upao.pe.fhahback.models.enums.Sizes;
-import com.upao.pe.fhahback.models.enums.Suppliers;
 import com.upao.pe.fhahback.repositories.BrandProductRepository;
 import com.upao.pe.fhahback.repositories.InventoryRepository;
 import com.upao.pe.fhahback.repositories.ProductRepository;
@@ -10,9 +8,7 @@ import com.upao.pe.fhahback.serializers.brand.BrandSerializer;
 import com.upao.pe.fhahback.serializers.brandproduct.BrandProductSerializer;
 import com.upao.pe.fhahback.serializers.color.ColorSerializer;
 import com.upao.pe.fhahback.serializers.inventory.InventorySerializer;
-import com.upao.pe.fhahback.serializers.product.CreateProductFHAHRequest;
-import com.upao.pe.fhahback.serializers.product.CreateProductRHRequest;
-import com.upao.pe.fhahback.serializers.product.ProductSerializer;
+import com.upao.pe.fhahback.serializers.product.*;
 import com.upao.pe.fhahback.serializers.size.SizeSerializer;
 import com.upao.pe.fhahback.serializers.supplier.SupplierSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +72,7 @@ public class ProductService {
             }
         }
         else{
-            product = new Product(null, request.getCode(), request.getPurchasePrice(), request.getName(), request.getModel(), request.getSalesPrice(), new ArrayList<>(), new ArrayList<>());
+            product = new Product(null, request.getCode(), request.getBarcode(), request.getPurchasePrice(), request.getName(), request.getModel(), request.getSalesPrice(), request.getPhoto(), new ArrayList<>(), new ArrayList<>());
             productRepository.save(product);
             inventory.setProduct(product);
             inventoryRepository.save(inventory);
@@ -113,7 +109,7 @@ public class ProductService {
             }
         }
         else{
-            product = new Product(null, request.getCode(), request.getPurchasePrice(), request.getName(), null, request.getSalesPrice(), new ArrayList<>(), new ArrayList<>());
+            product = new Product(null, request.getCode(), request.getBarcode(), request.getPurchasePrice(), request.getName(), null, request.getSalesPrice(), request.getPhoto(), new ArrayList<>(), new ArrayList<>());
             productRepository.save(product);
             brandProduct.setProduct(product);
             brandProductRepository.save(brandProduct);
@@ -166,7 +162,7 @@ public class ProductService {
             BrandProductSerializer brandProductSerializer = new BrandProductSerializer(brand.getQuantity(), new BrandSerializer(brand.getBrand().getBrandName()));
             brands.add(brandProductSerializer);
         }
-        return new ProductSerializer(product.getCode(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(), inventories, brands);
+        return new ProductSerializer(product.getCode(), product.getBarcode(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(),  product.getPhoto(), inventories, brands);
     }
 
 
@@ -177,5 +173,78 @@ public class ProductService {
             throw new RuntimeException("Producto no encontrado");
         }
         return product.get();
+    }
+
+    // FILTER PRODUCTS FHAH
+    public List<DetailsProductSerializer> filterProductsFHAH(FilterProductsFHAHRequest request){
+        List<Color> colors = colorService.getColors(request.getColors());
+        List<Size> sizes = sizeService.getSizes(request.getSizes());
+        List<Supplier> suppliers = supplierService.getSuppliers(request.getSuppliers());
+
+        // Verificar si algún filtro enviado por el usuario no tiene coincidencias en la base de datos
+        if ((colors != null && colors.isEmpty()) ||
+                (sizes != null && sizes.isEmpty()) ||
+                (suppliers != null && suppliers.isEmpty())) {
+            return List.of(); // Retorna vacío si algún filtro enviado no tiene coincidencias
+        }
+
+        // Aplicar el filtrado acumulativo solo con los filtros que se enviaron
+        List<Inventory> results = inventoryRepository.findAll().stream()
+                .filter(inventory ->
+                        (colors == null || colors.contains(inventory.getColor())) &&
+                                (sizes == null || sizes.contains(inventory.getSize())) &&
+                                (suppliers == null || suppliers.contains(inventory.getSupplier()))
+                )
+                .toList();
+
+        // Mapear los resultados a `ProductSerializer`
+        return results.stream()
+                .map(this::returnDetailsProductSerializerFHAH)
+                .toList();
+    }
+
+    // FILTER PRODUCT RH
+    public List<DetailsProductSerializer> filterProductsRH(FilterProductsRHRrequest request){
+        List<Brand> brands = brandService.getBrands(request.getBrands());
+
+        // Verificar si algún filtro enviado por el usuario no tiene coincidencias en la base de datos
+        if (brands != null && brands.isEmpty()){
+            return List.of(); // Retorna vacío si algún filtro enviado no tiene coincidencias
+        }
+
+        // Aplicar el filtrado acumulativo solo con los filtros que se enviaron
+        List<BrandProduct> results = brandProductRepository.findAll().stream()
+                .filter(brandProduct -> brands == null || brands.contains(brandProduct.getBrand())).toList();
+
+        // Mapear los resultados a `ProductSerializer`
+        return results.stream()
+                .map(this::returnDetailsProductSerializerRH)
+                .toList();
+    }
+
+    public DetailsProductSerializer returnDetailsProductSerializerFHAH(Inventory inventory){
+        Product product = inventory.getProduct();
+        InventorySerializer inventorySerializer = new InventorySerializer(inventory.getQuantity(), new SupplierSerializer(inventory.getSupplier().getSuppliersName().toString()), new SizeSerializer(inventory.getSize().getSize().toString()), new ColorSerializer(inventory.getColor().getColorName()));
+        return new DetailsProductSerializer(product.getCode(), product.getBarcode(), product.getPhoto(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(), inventorySerializer, null);
+    }
+
+    public DetailsProductSerializer returnDetailsProductSerializerRH(BrandProduct brand){
+        Product product = brand.getProduct();
+        BrandProductSerializer brandSerializer = new BrandProductSerializer(brand.getQuantity(), new BrandSerializer(brand.getBrand().getBrandName()));
+        return new DetailsProductSerializer(product.getCode(), product.getBarcode(), product.getPhoto(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(), null, brandSerializer);
+    }
+
+    // SEARCH PRODUCTS
+    public List<DetailsProductSerializer> searchProducts(String request){
+        List<Product> products = productRepository.findAllByNameContainingIgnoreCase(request);
+        List<DetailsProductSerializer> detailsProduct = new ArrayList<>();
+        products.forEach(product -> {
+            if(product.getInventories().isEmpty()){
+                product.getBrandProducts().forEach(brand -> detailsProduct.add(returnDetailsProductSerializerRH(brand)));
+            } else {
+                product.getInventories().forEach(inventory -> detailsProduct.add(returnDetailsProductSerializerFHAH(inventory)));
+            }
+        });
+        return detailsProduct;
     }
 }

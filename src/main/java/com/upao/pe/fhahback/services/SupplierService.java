@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,6 +26,12 @@ public class SupplierService {
             throw new RuntimeException("Proveedor no encontrado");
         }
         return supplier.get();
+    }
+
+    public List<Supplier> getSuppliers(List<String> supplierNames){
+        List<Suppliers> suppliersEnums = new ArrayList<>();
+        supplierNames.forEach(supplierName -> suppliersEnums.add(Suppliers.valueOf(supplierName.toUpperCase())));
+        return supplierNames.isEmpty() ? null : supplierRepository.findBySuppliersNameIn(suppliersEnums);
     }
 
     public boolean existsSupplier(String supplierName){

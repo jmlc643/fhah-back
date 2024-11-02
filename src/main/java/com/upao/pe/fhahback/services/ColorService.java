@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,6 +25,10 @@ public class ColorService {
             throw new RuntimeException("Color no encontrado");
         }
         return color.get();
+    }
+
+    public List<Color> getColors(List<String> colorNames){
+        return colorNames.isEmpty() ? null : colorRepository.findByColorNameIn(colorNames);
     }
 
     public boolean existsColor(String colorName){

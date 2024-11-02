@@ -1,11 +1,13 @@
 package com.upao.pe.fhahback.services;
 
 import com.upao.pe.fhahback.models.Brand;
+import com.upao.pe.fhahback.models.enums.Sizes;
 import com.upao.pe.fhahback.repositories.BrandRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,6 +27,10 @@ public class BrandService {
             throw new RuntimeException("Marca no encontrada");
         }
         return brand.get();
+    }
+
+    public List<Brand> getBrands(List<String> brands){
+        return brands.isEmpty() ? null : brandRepository.findByBrandNameIn(brands);
     }
 
     public boolean existsBrand(String brandName){

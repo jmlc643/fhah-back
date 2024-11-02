@@ -1,8 +1,6 @@
 package com.upao.pe.fhahback.controllers;
 
-import com.upao.pe.fhahback.serializers.product.CreateProductFHAHRequest;
-import com.upao.pe.fhahback.serializers.product.CreateProductRHRequest;
-import com.upao.pe.fhahback.serializers.product.ProductSerializer;
+import com.upao.pe.fhahback.serializers.product.*;
 import com.upao.pe.fhahback.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -32,5 +30,20 @@ public class ProductController {
     @PostMapping("/create/rh/")
     public ProductSerializer createProductRH(@RequestBody CreateProductRHRequest request){
         return productService.createProductRH(request);
+    }
+
+    @PostMapping("/filter/fhah/")
+    public List<DetailsProductSerializer> filterProductsFHAH(@RequestBody FilterProductsFHAHRequest request){
+        return productService.filterProductsFHAH(request);
+    }
+
+    @PostMapping("/filter/rh/")
+    public List<DetailsProductSerializer> filterProductsRH(@RequestBody FilterProductsRHRrequest request){
+        return productService.filterProductsRH(request);
+    }
+
+    @GetMapping("/search/{product}")
+    public List<DetailsProductSerializer> searchProducts(@PathVariable String product){
+        return productService.searchProducts(product);
     }
 }

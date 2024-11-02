@@ -7,6 +7,8 @@ import lombok.Data;
 @Data
 public class CreateProductRHRequest {
     private String code;
+    private String barcode;
+    private String photo;
     private String name;
     private int quantity;
     private double purchasePrice;
