@@ -17,6 +17,9 @@ public class BrandProduct {
     @Column(name = "id_marca_producto")
     private Long idBrandProduct;
 
+    @Column(name = "codigo_barras", nullable = false, unique = true)
+    private String barcode;
+
     @Column(name = "cantidad", nullable = false)
     private int quantity;
 

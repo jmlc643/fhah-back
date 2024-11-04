@@ -9,7 +9,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class DetailsProductSerializer {
     private String code;
-    private String barcode;
     private String photo;
     private String name;
     private String model;
