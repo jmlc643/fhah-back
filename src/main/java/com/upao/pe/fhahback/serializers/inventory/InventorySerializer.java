@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class InventorySerializer {
+    private String barcode;
     private int quantity;
     private SupplierSerializer supplier;
     private SizeSerializer size;

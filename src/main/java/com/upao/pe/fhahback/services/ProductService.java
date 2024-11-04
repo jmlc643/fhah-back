@@ -52,7 +52,7 @@ public class ProductService {
         } else{
             supplier = supplierService.createSupplier(request.getSupplierName());
         }
-        Inventory inventory = new Inventory(null, request.getQuantity(), supplier, size, color, null);
+        Inventory inventory = new Inventory(null, request.getBarcode(), request.getQuantity(), supplier, size, color, null);
         if(productRepository.existsByCode(request.getCode())){
             Product productFounded = getProduct(request.getCode());
             inventory.setProduct(productFounded);
@@ -72,7 +72,7 @@ public class ProductService {
             }
         }
         else{
-            product = new Product(null, request.getCode(), request.getBarcode(), request.getPurchasePrice(), request.getName(), request.getModel(), request.getSalesPrice(), request.getPhoto(), new ArrayList<>(), new ArrayList<>());
+            product = new Product(null, request.getCode(), request.getPurchasePrice(), request.getName(), request.getModel(), request.getSalesPrice(), request.getPhoto(), new ArrayList<>(), new ArrayList<>());
             productRepository.save(product);
             inventory.setProduct(product);
             inventoryRepository.save(inventory);
@@ -89,7 +89,7 @@ public class ProductService {
         } else{
             brand = brandService.createBrand(request.getBrandName());
         }
-        BrandProduct brandProduct = new BrandProduct(null, request.getQuantity(), brand, null);
+        BrandProduct brandProduct = new BrandProduct(null, request.getBarcode(), request.getQuantity(), brand, null);
         if(productRepository.existsByCode(request.getCode())){
             Product productFounded = getProduct(request.getCode());
             brandProduct.setProduct(productFounded);
@@ -109,7 +109,7 @@ public class ProductService {
             }
         }
         else{
-            product = new Product(null, request.getCode(), request.getBarcode(), request.getPurchasePrice(), request.getName(), null, request.getSalesPrice(), request.getPhoto(), new ArrayList<>(), new ArrayList<>());
+            product = new Product(null, request.getCode(), request.getPurchasePrice(), request.getName(), null, request.getSalesPrice(), request.getPhoto(), new ArrayList<>(), new ArrayList<>());
             productRepository.save(product);
             brandProduct.setProduct(product);
             brandProductRepository.save(brandProduct);
@@ -155,14 +155,14 @@ public class ProductService {
         List<InventorySerializer> inventories = new ArrayList<>();
         List<BrandProductSerializer> brands = new ArrayList<>();
         for(Inventory inventory : product.getInventories()){
-            InventorySerializer inventorySerializer = new InventorySerializer(inventory.getQuantity(), new SupplierSerializer(inventory.getSupplier().getSuppliersName().toString()), new SizeSerializer(inventory.getSize().getSize().toString()), new ColorSerializer(inventory.getColor().getColorName()));
+            InventorySerializer inventorySerializer = new InventorySerializer(inventory.getBarcode(), inventory.getQuantity(), new SupplierSerializer(inventory.getSupplier().getSuppliersName().toString()), new SizeSerializer(inventory.getSize().getSize().toString()), new ColorSerializer(inventory.getColor().getColorName()));
             inventories.add(inventorySerializer);
         }
         for(BrandProduct brand : product.getBrandProducts()){
-            BrandProductSerializer brandProductSerializer = new BrandProductSerializer(brand.getQuantity(), new BrandSerializer(brand.getBrand().getBrandName()));
+            BrandProductSerializer brandProductSerializer = new BrandProductSerializer(brand.getBarcode(), brand.getQuantity(), new BrandSerializer(brand.getBrand().getBrandName()));
             brands.add(brandProductSerializer);
         }
-        return new ProductSerializer(product.getCode(), product.getBarcode(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(),  product.getPhoto(), inventories, brands);
+        return new ProductSerializer(product.getCode(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(),  product.getPhoto(), inventories, brands);
     }
 
 
@@ -224,14 +224,14 @@ public class ProductService {
 
     public DetailsProductSerializer returnDetailsProductSerializerFHAH(Inventory inventory){
         Product product = inventory.getProduct();
-        InventorySerializer inventorySerializer = new InventorySerializer(inventory.getQuantity(), new SupplierSerializer(inventory.getSupplier().getSuppliersName().toString()), new SizeSerializer(inventory.getSize().getSize().toString()), new ColorSerializer(inventory.getColor().getColorName()));
-        return new DetailsProductSerializer(product.getCode(), product.getBarcode(), product.getPhoto(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(), inventorySerializer, null);
+        InventorySerializer inventorySerializer = new InventorySerializer(inventory.getBarcode(), inventory.getQuantity(), new SupplierSerializer(inventory.getSupplier().getSuppliersName().toString()), new SizeSerializer(inventory.getSize().getSize().toString()), new ColorSerializer(inventory.getColor().getColorName()));
+        return new DetailsProductSerializer(product.getCode(), product.getPhoto(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(), inventorySerializer, null);
     }
 
     public DetailsProductSerializer returnDetailsProductSerializerRH(BrandProduct brand){
         Product product = brand.getProduct();
-        BrandProductSerializer brandSerializer = new BrandProductSerializer(brand.getQuantity(), new BrandSerializer(brand.getBrand().getBrandName()));
-        return new DetailsProductSerializer(product.getCode(), product.getBarcode(), product.getPhoto(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(), null, brandSerializer);
+        BrandProductSerializer brandSerializer = new BrandProductSerializer(brand.getBarcode(), brand.getQuantity(), new BrandSerializer(brand.getBrand().getBrandName()));
+        return new DetailsProductSerializer(product.getCode(), product.getPhoto(), product.getName(), product.getModel(), product.getPurchasePrice(), product.getSalesPrice(), null, brandSerializer);
     }
 
     // SEARCH PRODUCTS

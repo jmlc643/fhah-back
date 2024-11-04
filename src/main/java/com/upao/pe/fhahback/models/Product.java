@@ -22,9 +22,6 @@ public class Product {
     @Column(name = "codigo", nullable = false)
     private String code;
 
-    @Column(name = "codigo_barras", nullable = false, unique = true)
-    private String barcode;
-
     @Column(name = "precio_compra", nullable = false)
     private double purchasePrice;
 

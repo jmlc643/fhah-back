@@ -17,6 +17,9 @@ public class Inventory {
     @Column(name = "id_inventario")
     private Long idInventory;
 
+    @Column(name = "codigo_barras", nullable = false, unique = true)
+    private String barcode;
+
     @Column(name = "cantidad", nullable = false)
     private int quantity;
 

@@ -11,7 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductSerializer {
     private String code;
-    private String barcode;
     private String name;
     private String model;
     private double purchasePrice;
